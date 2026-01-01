@@ -12,11 +12,11 @@ const Navbar = ({setShowLogin}) => {
     //Navbar Container
 
     <div
-      className={`flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 text-gray-600 border-b border-borderColor relative transition-all ${
+      className={`flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 text-gray-600 bg-blue-400 border-b border-borderColor sticky top-0 z-10 transition-all  ${
         location.pathname === "/" ? "bg-light" : "bg-white"
       }`}
     >
-      <Link>
+      <Link to={"/"}>
         <img src={assets.logo} alt="Logo" className="h-8" />
       </Link>
 
@@ -28,7 +28,7 @@ const Navbar = ({setShowLogin}) => {
         {menuLinks.map((link, index) => (
           <Link
             key={index}
-            to={link.to}
+            to={link.path}
             className="mx-4 text-gray-700 hover:text-blue-600"
           >
             {link.name}
@@ -46,7 +46,7 @@ const Navbar = ({setShowLogin}) => {
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto max-sm:mt-4 max-sm:pt-4 max-sm:border-t border-gray-200">
             <button onClick={() => navigate('/owner')} className="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 font-medium rounded-lg transition-colors duration-200 w-full sm:w-auto text-center">
-              Dashboard
+              List Cars
             </button>
             <button onClick={() => setShowLogin(true)} className="cursor-pointer px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md w-full sm:w-auto text-center">
               Login
