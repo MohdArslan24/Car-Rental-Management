@@ -1,19 +1,43 @@
 import React from 'react'
 import Title from "../../components/owner/Title";
-import { assets, dummyMyBookingsData } from "../../assets/assets";
+import { assets } from "../../assets/assets";
 import { useEffect, useState } from "react";
+import { useAppContext } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 
 const ManageBookings = () => {
- const currency = import.meta.env.VITE_CURRENCY || "₹";
+  const {axios, currency} = useAppContext()
   const [bookings,setBooking] = useState([])
     const fetchOwnerBookings = async () => {
-      setBooking(dummyMyBookingsData)
+     try{
+      const {data} = await axios.get('/api/bookings/owner')
+      data.success ? setBooking(data.bookings) : toast.error(data.message)
+      console.log(bookings)
+     }
+     catch(err){
+      toast.error(err.message)
+     }
     }
-    const handleStatusChange = (index, newStatus) => {
-      const updatedBookings = [...bookings];
-      updatedBookings[index].status = newStatus;
-      setBooking(updatedBookings);
+    const changeBookingStatus = async (bookingId,status) => {
+     try{
+      const {data} = await axios.post('/api/bookings/change-status',{bookingId,status})
+      if(data.success){
+         toast.success(data.message)
+         fetchOwnerBookings()
+      }
+      else{
+         toast.error(data.message)
+      }
+     }
+     catch(err){
+      toast.error(err.message)
+     }
     }
+    // const handleStatusChange = (index, newStatus) => {
+    //   const updatedBookings = [...bookings];
+    //   updatedBookings[index].status = newStatus;
+    //   setBooking(updatedBookings);
+    // }
     useEffect(() => {
       fetchOwnerBookings();
     },[]);
@@ -39,35 +63,49 @@ const ManageBookings = () => {
             </tr>
           </thead>
           <tbody className='text-gray-700'>
-            {bookings.map((booking,index) => {
-              return (
-                <tr key={index} className="border-t border-borderColor ">
+            {bookings.map((booking,index) => (
+              booking.car ? (
+                <tr key={index} className="border-t border-borderColor">
                   <td className="flex items-center p-3 gap-3">
                     <img src={booking.car.image} alt="" className="h-16 w-16 aspect-square rounded-md object-cover" />
                     <div className="max-md:hidden">
                       <p className="font-medium">{booking.car.brand} {booking.car.model}</p>
-                    
+                      <p className="text-xs text-blue-600">{booking.car.vehicleNumber}</p>
                     </div>
                   </td>
-                  <td className="p-3 max-md:hidden">{booking.pickupDate.split('T')[0]}  To  {booking.returnDate.split('T')[0]}</td>
-                  <td className="p-3 max-md:hidden">{currency}{booking.price}/day</td>
-                  <td className="p-3 max-md:hidden">{booking.status === "confirmed" ? <span className="bg-green-100 p-2 text-green-500 rounded-full">Confirmed</span> : (booking.status === "completed") ? <span className="bg-blue-100 p-2 text-blue-500 rounded-full">Completed</span> : (booking.status === "cancelled") ? <span className="bg-red-100 p-2 text-red-500 rounded-full">Cancelled</span> : <span className="bg-yellow-100 p-2 text-yellow-500 rounded-full">Pending</span>}</td>
-                  <td className="p-3 max-md:hidden">
+                  <td className="p-3 max-md:hidden">{booking.pickupDate.split('T')[0]}</td>
+                  <td className="p-3">{currency}{booking.totalPrice}</td>
+                  <td className="p-3 max-md:hidden">{booking.status === "confirmed" ? <span className="bg-green-100 text-green-600 p-1 px-2 rounded-full text-xs font-medium">Confirmed</span> : booking.status === "completed" ? <span className="bg-blue-100 text-blue-600 p-1 px-2 rounded-full text-xs font-medium">Completed</span> : booking.status === "cancelled" ? <span className="bg-red-100 text-red-600 p-1 px-2 rounded-full text-xs font-medium">Cancelled</span> : <span className="bg-yellow-100 text-yellow-600 p-1 px-2 rounded-full text-xs font-medium">Pending</span>}</td>
+                  <td className="p-3">
                     {booking.status === "pending" ? (
-                      <select name="" value={booking.status} id="" className="border border-gray-300 rounded-md p-2 cursor-pointer outline-none" onChange={(e) => handleStatusChange(index, e.target.value)}>
+                      <select onChange={(e)=>{changeBookingStatus(booking._id,e.target.value); /*handleStatusChange(index, e.target.value) }*/}} name="" value={booking.status} id="" className="border border-gray-300 rounded-md p-1.5 text-xs cursor-pointer outline-none">
                         <option value="pending">Pending</option>
                         <option value="confirmed">Confirm</option>
                         <option value="cancelled">Cancel</option>
                       </select>
                     ) : (
-                      <span>
-                        No Actions Available
-                      </span>
+                      <span className="text-gray-500 text-xs">-</span>
                     )}
                   </td>
                 </tr>
+              ) : (
+                <tr key={index} className="border-t border-borderColor bg-gray-50">
+                  <td className="flex items-center p-3 gap-3">
+                    <div className="h-16 w-16 aspect-square rounded-md bg-gray-300 flex items-center justify-center">
+                      <span className="text-gray-500 text-xs">N/A</span>
+                    </div>
+                    <div className="max-md:hidden">
+                      <p className="font-medium text-gray-400">Car Deleted</p>
+                      <p className="text-xs text-gray-500">Vehicle data unavailable</p>
+                    </div>
+                  </td>
+                  <td className="p-3 max-md:hidden">{booking.pickupDate.split('T')[0]}</td>
+                  <td className="p-3">{currency}{booking.totalPrice}</td>
+                  <td className="p-3 max-md:hidden"><span className="bg-gray-200 text-gray-600 p-1 px-2 rounded-full text-xs font-medium">{booking.status}</span></td>
+                  <td className="p-3"><span className="text-gray-400 text-xs">-</span></td>
+                </tr>
               )
-            })}
+            ))}
           </tbody>
         </table>
       </div>

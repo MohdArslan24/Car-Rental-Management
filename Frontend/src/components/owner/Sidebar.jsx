@@ -3,14 +3,30 @@ import { dummyUserData, ownerMenuLinks } from '../../assets/assets'
 import { NavLink } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useState } from 'react';
-
+import { useAppContext } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 const Sidebar = () => {
-    const user = dummyUserData;
+    const {user, axios, fetchUser} = useAppContext() 
     const location = useLocation();
     const [image, setImage] = useState('');
-    const updateImage = async => {
-        user.image = URL.createObjectURL(image)
-        setImage('');
+    const updateImage = async () => {
+        try{
+          const formData = new FormData()
+          formData.append('image',image)
+          const {data} = await axios('/api/owner/update-profile-image', formData)
+          if(data.success){
+            fetchUser()
+            toast.success(data.message)
+            setImage(null)
+          
+          }
+          else{
+            toast.error(data.message)
+          }
+        }
+        catch(err){
+          toast.error(err.message)
+        }
     }
   return (
     <div className='relative min-h-screen md:flex flex-col items-center mt-8 max-w-13 md:max-w-60 w-full border-r border-borderColor text-sm'>

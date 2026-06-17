@@ -11,7 +11,7 @@ const Banner = () => {
         <h2 className='text-3xl font-medium'>Do you own a luxury car</h2>
         <p className='mt-2'>Monetize your vehicle effortlessly by listing it on Car Rental.</p>
         <p className='max-w-150'>We take care of driver verification and secure payments so you can earn passive income stress free.</p>
-        <button onClick={() => {navigate('/add-car')}} className='px-6 py-2 bg-white hover:bg-slate-100 transition-all text-primary rounded-lg text-sm mt-4 cursor-pointer '>List your car</button>
+        <button onClick={() => {navigate('/owner/add-car')}} className='px-6 py-2 bg-white hover:bg-slate-100 transition-all text-primary rounded-lg text-sm mt-4 cursor-pointer '>List your car</button>
       </div>
       <img src={assets.banner_car_image} alt="banner_img" className='max-h-40 md:max-h-48 shrink-0' />
       </div>

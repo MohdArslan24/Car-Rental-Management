@@ -1,66 +1,103 @@
-import React, { use } from "react";
-import { assets } from "../assets/assets";
+import React from "react";
 import { useNavigate } from "react-router-dom";
+import { assets } from "../assets/assets";
+import { useAppContext } from "../context/AppContext";
+
+
+const HeartIcon = ({ filled }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill={filled ? "#ef4444" : "none"}
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="#ef4444"
+    className="w-7 h-7 drop-shadow bg-white rounded-full p-1 border border-gray-200"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.676 0-3.154.936-3.937 2.344C11.154 4.686 9.676 3.75 8 3.75 5.401 3.75 3.3 5.765 3.3 8.25c0 7.22 8.25 11.25 8.25 11.25s8.25-4.03 8.25-11.25z"
+    />
+  </svg>
+);
+
 const CarCard = ({ car }) => {
   const currency = import.meta.env.VITE_CURRENCY || "₹";
   const navigate = useNavigate();
+  const { user, addToWishlist, removeFromWishlist, setShowLogin } = useAppContext();
+  const isWishlisted = user?.wishlist?.some((id) => id === car._id || id?._id === car._id);
+
+  const handleWishlistClick = (e) => {
+    e.stopPropagation();
+    if (!user) {
+      setShowLogin(true);
+      return;
+    }
+    if (isWishlisted) {
+      removeFromWishlist(car._id);
+    } else {
+      addToWishlist(car._id);
+    }
+  };
+
   return (
     <div
       onClick={() => {
-        navigate(`/car-details/${car._id}`);
-        scrollTo(0, 0);
+        navigate(`/cars/${car._id}`);
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
       }}
-      className="group rounded-xl overflow-hidden shadow-lg hover:-translate-y-1 transition-all duration-500 cursor-pointer bg-white"
+      className="cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow relative"
     >
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={car.image}
-          alt=""
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+      {/* Wishlist Button */}
+      <button
+        className="absolute top-2 right-2 z-10 cursor-pointer"
+        onClick={handleWishlistClick}
+        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+      >
+        <HeartIcon filled={isWishlisted} />
+      </button>
 
-        {car.isAvaliable && (
-          <p className="absolute top-4 left-4 bg-primary/90 text-white text-xs px-2.5 py-1 rounded-full">
-            Available Now
-          </p>
-        )}
-        <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-sm text-white px-3 py-2 rounded-lg">
-          <span className="font-semibold">
-            {currency}
-            {car.pricePerDay}
-          </span>
-          <span className="text-sm text-white/8k0"> / day</span>
-        </div>
-      </div>
-
-      <div className="p-4 sm:p-5">
+      <img src={car.image} alt="" className="w-full h-48 object-cover" />
+      <div className="p-4 bg-white">
         <div className="flex justify-between items-start mb-2">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800">
-              {car.brand} {car.model}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {car.category} • {car.year}
-            </p>
-          </div>
+          <h2 className="text-lg font-semibold">{car.brand} {car.model}</h2>
+          <p className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+            {car.year}
+          </p>
         </div>
-        <div className="pt-4 grid grid-cols-2 gap-y-2 text-gray-600">
-          <div className="flex items-center text-sm text-muted foreground">
-            <img src={assets.users_icon} alt="owner" className="h-4 mr-2" />
-            <span>{car.seating_capacity} Seats</span>
-          </div>
-          <div className="flex items-center text-sm text-muted foreground">
-            <img src={assets.fuel_icon} alt="owner" className="h-4 mr-2" />
-            <span>{car.fuel_type} Seats</span>
-          </div>
-          <div className="flex items-center text-sm text-muted foreground">
-            <img src={assets.car_icon} alt="owner" className="h-4 mr-2" />
-            <span>{car.transmission}</span>
-          </div>
-          <div className="flex items-center text-sm text-muted foreground">
-            <img src={assets.location_icon} alt="owner" className="h-4 mr-2" />
-            <span>{car.location}</span>
-          </div>
+
+        {/* Owner Name */}
+        {car.owner && (
+          <p className="text-xs text-gray-500 mb-1 font-medium">Owner: {car.owner.name}</p>
+        )}
+
+        <p className="text-xs text-gray-500 mb-2">Vehicle No. : {car.vehicleNumber}</p>
+
+        <div className="flex gap-2 text-xs text-gray-600 mb-3">
+          <span className="flex items-center gap-1">
+            <img src={assets.fuel_icon} alt="" className="h-3" />
+            {car.fuelType}
+          </span>
+          <span className="flex items-center gap-1">
+            <img src={assets.car_icon} alt="" className="h-3" />
+            {car.transmission}
+          </span>
+          <span className="flex items-center gap-1">
+            <img src={assets.users_icon} alt="" className="h-3" />
+            {car.seating} Seats
+          </span>
+        </div>
+
+        <p className="text-xs text-gray-500 mb-3">{car.location}</p>
+
+        <div className="flex justify-between items-center">
+          <p className="text-lg font-bold text-blue-600">
+            {currency}{car.dailyRate || car.pricePerDay || "N/A"}
+            <span className="text-sm text-gray-500">/day</span>
+          </p>
+          <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+            View
+          </button>
         </div>
       </div>
     </div>

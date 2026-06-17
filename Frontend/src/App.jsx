@@ -1,43 +1,52 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
-import { useLocation , Routes , Route } from 'react-router-dom';
-import Home from './pages/Home';
-import Cars from './pages/Cars';
-import CarDetails from './pages/CarDetails';
-import BookingPage from './pages/BookingPage';
-import Footer from './components/Footer';
-import Layout from './pages/owner/Layout.jsx';
-import Dashboard from './pages/owner/Dashboard.jsx';
-import AddCar from './pages/owner/AddCar.jsx';
-import ManageCars from './pages/owner/ManageCars.jsx';
-import ManageBookings from './pages/owner/ManageBookings.jsx';
-import Login from './components/Login.jsx';
-function App() {
-  const [showLogin, setShowLogin] = useState(false);
-  const isOwnerPath = useLocation().pathname.startsWith('/owner')
-  return (
-    <>
-    {showLogin && <Login setShowLogin={setShowLogin}/>}
-    {!isOwnerPath && <Navbar setShowLogin={setShowLogin}/>}
+import Footer from './components/Footer'
+import Home from './pages/Home'
+import Cars from './pages/Cars'
+import CarDetails from './pages/CarDetails'
+import BookingPage from './pages/BookingPage'
+import Messages from './pages/Messages'
+import Wishlist from './pages/Wishlist'
+import Login from './components/Login'
+import Layout from './pages/owner/Layout'
+import AddCar from './pages/owner/AddCar'
+import ManageCars from './pages/owner/ManageCars'
+import ManageBookings from './pages/owner/ManageBookings'
+import Dashboard from './pages/owner/Dashboard'
+import { Routes, Route } from 'react-router-dom';
+import { useAppContext } from './context/AppContext';
 
-    <Routes>
-      <Route path='/' element={<Home />} />
-      <Route path='/car-details/:id' element={<CarDetails />} />
-      <Route path='/cars' element={<Cars />} />
-      <Route path='/my-bookings' element={<BookingPage />} />
-      <Route path='/owner' element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path='add-car' element={<AddCar />} />
-        <Route path='manage-cars' element={<ManageCars />} />
-        <Route path='manage-bookings' element={<ManageBookings />} />
-      </Route>
-    </Routes>
+function App() {
+  const { showLogin, setShowLogin, fetchCars } = useAppContext()
+
+  useEffect(() => {
+    fetchCars()
+  }, [])
+
+  return (
+    <div className='min-h-screen bg-white'>
+      {showLogin && <Login />}
       
-      {!isOwnerPath && <Footer />}
-    </>
-    
+      <Routes>
+        {/* Customer Routes */}
+        <Route path='/' element={<><Navbar /><Home /><Footer /></>} />
+        <Route path='/cars' element={<><Navbar /><Cars /><Footer /></>} />
+        <Route path='/cars/:id' element={<><Navbar /><CarDetails /><Footer /></>} />
+        <Route path='/my-bookings' element={<><Navbar /><BookingPage /><Footer /></>} />
+        <Route path='/my-inquiries' element={<><Navbar /><BookingPage /><Footer /></>} />
+        <Route path='/wishlist' element={<><Navbar /><Wishlist /><Footer /></>} />
+        <Route path='/messages' element={<><Navbar /><Messages /><Footer /></>} />
+
+        {/* Owner Routes */}
+        <Route path='/owner/*' element={<Layout />}>
+          <Route path='dashboard' element={<Dashboard />} />
+          <Route path='add-car' element={<AddCar />} />
+          <Route path='manage-cars' element={<ManageCars />} />
+          <Route path='manage-bookings' element={<ManageBookings />} />
+        </Route>
+      </Routes>
+    </div>
   )
-  
 }
 
 export default App
